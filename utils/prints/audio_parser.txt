@@ -1,0 +1,8 @@
+audio_parser.ipynb
+----------------------
+from scipy.io import wavfile
+
+sample_rate, data = wavfile.read('../data/raw/120695.wav')
+print('sample rate: {}Hz'.format(sample_rate))
+print('num of samples: {}'.format(len(data)))
+print('duration is {:.4f}s'.format(len(data) / sample_rate))

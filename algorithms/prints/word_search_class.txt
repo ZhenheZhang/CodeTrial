@@ -1,0 +1,115 @@
+word_search_class.ipynb
+----------------------------
+"""
+Task:
+Given an m x n grid of characters board and a string word,
+return true if word exists in the grid.
+
+The word can be constructed from letters of sequentially adjacent cells,
+where adjacent cells are horizontally or vertically neighboring.
+The same letter cell may not be used more than once.
+
+Example:
+
+Matrix:
+---------
+|A|B|C|E|
+|S|F|C|S|
+|A|D|E|E|
+---------
+
+Word:
+"ABCCED"
+
+Result:
+True
+
+Implementation notes: Use backtracking approach.
+At each point, check all neighbors to try to find the next letter of the word.
+
+leetcode: https://leetcode.com/problems/word-search/
+
+"""
+
+from __future__ import annotations
+
+class wordSearch():
+    def __init__(self, board: list[list[str]]) -> None:
+        self.board = board
+        self.row_size = len(board)
+        self.column_size = len(board[0])
+        # self.row_index = 0
+        # self.column_index = 0
+        self.tgt_word = ''
+        self.tgt_word_length = 0
+        self.visited_point_set = []
+        self.__traverts_directions = [(0, 1), (0, -1), (-1, 0), (1, 0)]
+
+
+    def loadTgtWord(self, word: str) -> None:
+        self.tgt_word = word
+        self.tgt_word_length = len(word)
+
+    
+    def get_point_key(self, row: int, column: int) -> int:
+        return int(row * self.column_size + column) 
+
+
+    def exists_word(self, row: int, column: int, word_index: int) -> bool:
+        if self.board[row][column] != self.tgt_word[word_index]:
+            return False
+
+        if word_index == self.tgt_word_length - 1:
+            return True
+
+        for direction in self.__traverts_directions:
+            next_i = row + direction[0]
+            next_j = column + direction[1]
+            if not (0 <= next_i < self.row_size and 0 <= next_j < self.column_size):
+                continue
+
+            key = self.get_point_key(next_i, next_j)
+            if key in self.visited_point_set:
+                continue
+
+            self.visited_point_set.append(key)
+            if self.exists_word(next_i, next_j, word_index + 1):
+                return True
+
+            self.visited_point_set.remove(key)
+
+        return False
+
+
+    def word_exists(self) -> bool:
+        for i in range(self.row_size):
+            for j in range(self.column_size):
+                self.visited_point_set.append(self.get_point_key(i, j))
+                if self.exists_word(i, j, 0):
+                    return True
+
+        return False
+
+
+def make_board() -> list[list[str]]:
+    """
+    Matrix:
+    ---------
+    |A|B|C|E|
+    |S|F|C|S|
+    |A|D|E|E|
+    ---------
+
+    """
+    board = [['A', 'B', 'C', 'E'],
+             ['S', 'F', 'C', 'S'],
+             ['A', 'D', 'E', 'E']]
+    return board
+
+
+if __name__ == "__main__":
+    board = make_board()
+    tgt_word = 'ABCCEC'
+    word_search = wordSearch(board=board)
+    word_search.loadTgtWord(word=tgt_word)
+    print(word_search.word_exists())

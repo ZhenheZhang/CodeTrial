@@ -1,0 +1,82 @@
+distribute_coins.ipynb
+-------------------------
+"""
+leetcode: https://leetcode.com/problems/distribute-coins-in-binary-tree/
+
+Implementation notes:
+User depth-first search approach.
+
+Let n is the number of nodes in tree
+Runtime: O(n)
+Space: O(1)
+"""
+
+from __future__ import annotations
+from dataclasses import dataclass
+
+@dataclass
+class TreeNode:
+    data: int
+    left: TreeNode | None = None
+    right: TreeNode | None = None
+
+
+# Validation
+def count_nodes(node: TreeNode | None) -> int:
+    if node is None:
+        return 0
+    return count_nodes(node.left) + count_nodes(node.right) + 1
+
+
+def count_coins(node: TreeNode | None) -> int:
+    if node is None:
+        return 0
+    return count_coins(node.left) + count_coins(node.right) + node.data
+
+
+# Main calculation
+def get_distrib(node: TreeNode | None) -> list[int]:
+    if node is None:
+        return [0, 1]
+
+    [left_distrib_moves, left_distrib_excess] = get_distrib(node.left)
+    [right_distrib_moves, right_distrib_excess] = get_distrib(node.right)
+    print(node.data, ':[left={}]'.format(node.left.data if node.left is not None else None), [left_distrib_moves, left_distrib_excess])
+    print(node.data, ':[right={}]'.format(node.right.data if node.right is not None else None), [right_distrib_moves, right_distrib_excess])
+
+    coins_to_left = 1 - left_distrib_excess
+    coins_to_right = 1 - right_distrib_excess
+
+    result_moves = left_distrib_moves + right_distrib_moves + abs(coins_to_left) + abs(coins_to_right)
+    result_excess = node.data - coins_to_left - coins_to_right
+    print(node.data, ':', [result_moves, result_excess])
+    return [result_moves, result_excess]
+
+
+def distribute_coins(root: TreeNode | None) -> int:
+    if root is None:
+        return 0
+
+    if count_nodes(root) != count_coins(root):
+        raise ValueError("The nodes number should be same as the number of coins")
+
+    return get_distrib(root)
+
+
+def make_tree():
+    """
+    The example:
+
+    """
+    root = TreeNode(1)
+    root.left = TreeNode(0)
+    root.right = TreeNode(0)
+    root.left.left = TreeNode(4)
+    root.left.right = TreeNode(0)
+    root.right.right = TreeNode(1)
+    return root
+
+
+if __name__ == "__main__":
+    coin_tree = make_tree()
+    print(distribute_coins(coin_tree))

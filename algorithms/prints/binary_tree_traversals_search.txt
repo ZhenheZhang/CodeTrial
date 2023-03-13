@@ -1,0 +1,131 @@
+binary_tree_traversals_search.ipynb
+-----------------------------------------
+from __future__ import annotations
+
+class Node:
+    """
+    A Node has data variable and pointers to Nodes to its left and right
+    """
+
+    def __init__(self, data: int, parent: Node) -> None:
+        self.data = data
+        self.parent = parent 
+        self.left: Node | None = None   # iterative property
+        self.right: Node | None = None  # iterative property
+
+def display(tree: Node) -> None:
+    if tree:
+        display(tree.left)
+        print(tree.data)
+        display(tree.right)
+
+
+def depth_of_tree(tree: Node) -> int:
+    depth = 0
+    if tree:
+        depth = 1 + max(depth_of_tree(tree.left), depth_of_tree(tree.right))
+    return depth 
+
+
+def is_full_binary_tree(tree: Node) -> bool:
+    if not tree:
+        return True
+    if tree.left and tree.right:
+        return is_full_binary_tree(tree.left) and is_full_binary_tree(tree.right)
+    else:
+        return not tree.left and not tree.right
+
+
+def make_tree():
+    """
+    The example:
+
+    """
+    root = Node(1, None)
+    root.left = Node(2, root)
+    root.right = Node(3, root)
+    root.left.left = Node(4, root.left)
+    root.left.right = Node(5, root.left)
+    root.left.right.left = Node(6, root.left.right)
+    root.right.left = Node(7, root.right)
+    root.right.left.left = Node(8, root.right.left)
+    root.right.left.left.right = Node(9, root.right.left.left)
+    return root
+
+ 
+"""
+Traversals method: Pre_order
+
+"""
+def pre_order(root: Node | None) -> list[int]:
+    all_nodes = []
+    if root:
+        all_nodes = [root.data] + pre_order(root.left) + pre_order(root.right)
+    return all_nodes
+
+
+"""
+Search
+
+"""
+
+def search_value(root: Node, value) -> Node | None:
+    # A naive implementation with pre-knowledge
+    if not root:
+        raise IndexError("Warning: Tree is empty! please use another.")
+    else:
+        node = root
+        while node is not None and node.data is not value:
+            if node.left is not None and node.right is not None:
+                if node.left.data is value:
+                    node = node.left
+                elif node.right.data is value:
+                    node = node.right
+                else:
+                    # with pre-knowledge
+                    node = node.right if value > 6 else node.left
+            elif node.left is not None and node.right is None:
+                    node = node.left
+            elif node.left is None and node.right is not None:
+                    node = node.right
+            else:
+                node = None
+        return node
+
+
+def __search(node: Node) -> list[int]:
+    node_path = []
+    if node.parent:
+        node_path = [node.parent.data] + __search(node.parent)
+    return node_path
+
+
+def search_path(node: Node) -> list[int]:
+    return [node.data] + __search(node)
+
+
+def get_distance(root: Node, value1: int, value2: int) -> list[int]:
+    node1 = search_value(root, value1)
+    node2 = search_value(root, value2)
+    node1_path = search_path(node1)
+    node2_path = search_path(node2)
+    for step, value in enumerate(node1_path):
+        if value in node2_path:
+            return step + node2_path.index(value)
+    return []
+
+
+def main():
+    tree = make_tree()
+    print(is_full_binary_tree(tree))
+    print(depth_of_tree(tree))
+    print("Tree is: ")
+    display(tree)
+    print("Pre-order Traversal: {}".format(pre_order(tree)))
+    print("Search value[{}]: {}".format(9, pre_order(search_value(tree, 9))))
+    print("Search path[{}] result: {}".format(9, search_path(search_value(tree, 9))))
+    print("Get distance between[{}] and [{}]: {}".format(9, 4, get_distance(tree, 9, 4)))
+
+if __name__ == "__main__":
+    main()
+

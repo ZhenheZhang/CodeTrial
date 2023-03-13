@@ -1,0 +1,36 @@
+json_parser.ipynb
+--------------------
+from __future__ import annotations
+import json
+
+def parser(json_file):
+    annotation_data = []
+    with open(json_file) as jfile:
+        for line in jfile:
+            j_seg = json.loads(line)
+            annotation_data.append(j_seg)
+    return annotation_data
+
+
+def writer(annotation_data, write_filename) -> None:
+    entries = []
+    for data in annotation_data:
+        entry = {}
+        entry['audio_filepath'] = data['audio_filepath']
+        entry['duration'] = data['audio_filepath']
+        entry['text'] = data['audio_filepath']
+        entries.append(entry)
+
+    with open(write_filename, 'w', encoding='utf-8') as fout:
+        for row in entries:
+            fout.write(json.dumps(row, ensure_ascii=False) + '\n')
+
+
+def main():
+    json_file = '../data/data2load.json'
+    writer(parser(json_file), 'parser.json')
+
+
+if __name__ == "__main__":
+    main()
+    

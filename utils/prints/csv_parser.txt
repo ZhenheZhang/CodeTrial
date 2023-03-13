@@ -1,0 +1,44 @@
+csv_parser.ipynb
+-------------------
+from __future__ import annotations
+import csv
+
+def parser(csv_file) -> list[list[str]]:
+    annotation_data = []
+    with open(csv_file, newline='') as f:
+        reader = csv.reader(f)
+        next(reader, None) # skip the headers
+        for row in reader:
+            annotation_data.append(row)
+    return annotation_data
+
+
+def writer(annotation_data: list[list[str]], write_filename: str) -> None:
+    # create meta
+    csv.register_dialect('meta', delimiter=',')
+    header = ["wav_filename", "wav_filesize", "transcript"]
+    rows = []
+    # parsing
+    for data in annotation_data:
+        assert len(data) == 3
+        rows.append({"wav_filename": data[0],
+                    "wav_filesize": data[1],
+                    "transcript": data[2]})
+    # write meta
+    with open(write_filename, 'w', newline='') as meta_csv:
+        csv_writer = csv.DictWriter(meta_csv, 
+        fieldnames=header,
+        dialect='meta',
+        extrasaction='ignore')
+        csv_writer.writeheader()
+        csv_writer.writerows(rows)
+
+
+def main():
+    csv_file = '../data/data2load.csv'
+    writer(parser(csv_file), 'parser.csv')
+
+
+if __name__ == "__main__":
+    main()
+    
