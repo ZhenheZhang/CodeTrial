@@ -6,6 +6,9 @@ import hashlib
 import json
 import jieba
 import codecs
+import re
+import unicodedata
+from typing import List
 
 
 def hash_text(text):
@@ -35,18 +38,21 @@ def is_repetition_detect(text: str,
     dup_line = 0
     dup_line_chars = 0
     visit_lines = {}
+
+    text_length = len(add_delim_space(text).split())
     for line in text.split("\n"):
+        line_length = len(add_delim_space(line).split())
         line_hash = hash_text(line)
         if line_hash in visit_lines:
             dup_line += 1
-            dup_line_chars += len(line)
+            dup_line_chars += line_length
         visit_lines[line_hash] = True
         line_count += 1
 
     if float(dup_line) / line_count > duplicate_line_fraction:
         return True
 
-    if float(dup_line_chars) / len(text) > duplicate_line_character_faction:
+    if float(dup_line_chars) / text_length > duplicate_line_character_faction:
         return True
 
     top_ngram_character_fractions = [
@@ -60,7 +66,7 @@ def is_repetition_detect(text: str,
         f_dist = nltk.FreqDist(bgs)
         for word_list, repeat in f_dist.items():
             char_count = sum([len(word) for word in word_list])
-            if char_count * (repeat - 1) / len(text) > threshold:
+            if char_count * (repeat - 1) / text_length > threshold:
                 return True
 
     duplicate_ngram_character_fractions = [
@@ -84,9 +90,46 @@ def is_repetition_detect(text: str,
             else:
                 fdist[bag] = 1
 
-        if sum(mark) / float(len(text)) > threshold:
+        if sum(mark) / float(text_length) > threshold:
             return True
     return False
+
+
+"""
+@Notes  :   String Utilities
+"""
+def remove_symbols(input: str) -> str:
+    """
+    :param input: string
+    :return: string
+    """
+    return "".join(
+        " " if unicodedata.category(c)[0] in "MSP" else c for c in unicodedata.normalize("NFKC", input)
+    )
+
+def text_split(input: List[str], max_length: int, max_segments: int) -> List[List[str]]:
+    split_list = []
+    for text in input:
+        try:
+            text = add_delim_space(text).split()
+            split_list.append([' '.join(text[i: i + max_length]) for i in range(0, len(text), max_length)])
+            if len(split_list) > max_segments:
+                split_list = []
+        except:
+            raise RuntimeError('Split text failed at {}'.format(text))
+    return split_list
+
+# Chinese token splitor
+def add_delim_space(text: str) -> str:
+    """
+    :param text: string
+    :return: string
+    """
+    PAT_ZH_SPACE = re.compile(r'(?<=[\u4e00-\u9fff])(?=[\u4e00-\u9fff])|(?<=[\u4e00-\u9fff])(?=[\da-zA-Z])|(?<=[\da-zA-Z])(?=[\u4e00-\u9fff])')
+    PAT_SPACE = re.compile(r'\s+')
+    text = PAT_ZH_SPACE.sub(' ', text)
+    text = PAT_SPACE.sub(' ', text)
+    return text
 
 
 def main():
