@@ -21,7 +21,7 @@ def writer(annotation_data, write_filename) -> None:
         entry['text'] = data['audio_filepath']
         entries.append(entry)
 
-    with open(write_filename, 'w', encoding='utf-8') as fout:
+    with open(write_filename, 'w', encoding='utf8') as fout:
         for row in entries:
             fout.write(json.dumps(row, ensure_ascii=False) + '\n')
 
